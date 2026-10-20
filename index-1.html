@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FDEFF2">
+<meta name="color-scheme" content="light">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="My Pet Care: نموذج تجريبي لحجز مواعيد العيادات البيطرية">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23FDEFF2'/%3E%3Cg fill='%23C9547F'%3E%3Cpath d='M50 54c-13 0-22 9-22 18 0 8 6 11 13 9 4-1 6-2 9-2s5 1 9 2c7 2 13-1 13-9 0-9-9-18-22-18z'/%3E%3Cellipse cx='22' cy='44' rx='8.5' ry='11'/%3E%3Cellipse cx='39' cy='26' rx='9' ry='12'/%3E%3Cellipse cx='61' cy='26' rx='9' ry='12'/%3E%3Cellipse cx='78' cy='44' rx='8.5' ry='11'/%3E%3C/g%3E%3C/svg%3E">
+<title>My Pet Care</title>
+<script>
+/* Early safety net (plain ES5): shows a readable error instead of a blank page, and loads fonts without blocking. */
+(function () {
+  var W = window, errs = [];
+  W.__mpcErrors = errs;
+  W.addEventListener('error', function (e) {
+    if (e && e.message) errs.push(e.message + (e.lineno ? ' (line ' + e.lineno + ')' : ''));
+  });
+  W.__mpcFail = function (detail, force) {
+    try {
+      if ((W.__mpcReady && !force) || document.getElementById('mpc-fail') || !document.body) return;
+      var d = document.createElement('div');
+      d.id = 'mpc-fail';
+      d.setAttribute('dir', 'rtl');
+      d.style.cssText = 'position:fixed;top:0;right:0;bottom:0;left:0;z-index:99999;background:#FDEFF2;color:#6B1D3F;font:16px/1.7 Tahoma,Arial,sans-serif;padding:24px 20px;overflow:auto;text-align:right';
+      var btn = 'display:block;width:100%;min-height:50px;margin:0 0 10px;border:0;border-radius:14px;font:700 16px Tahoma,Arial,sans-serif;cursor:pointer;';
+      d.innerHTML = '<h2 style="margin:0 0 8px;font-size:22px">تعذّر تشغيل My Pet Care</h2>' +
+        '<p style="margin:0 0 10px">حدث خطأ أثناء تشغيل التطبيق على هذا الجهاز. جرّب الخطوات التالية:</p>' +
+        '<ol style="margin:0 0 16px;padding:0 20px 0 0"><li>أعد تحميل الصفحة.</li><li>إن استمرت المشكلة فامسح بيانات التطبيق المحفوظة ثم أعد المحاولة.</li><li>تأكد أن المتصفح محدّث، أو جرّب Chrome أو Safari.</li></ol>' +
+        '<button id="mpc-reload" style="' + btn + 'background:#C9547F;color:#fff">إعادة تحميل الصفحة</button>' +
+        '<button id="mpc-clear" style="' + btn + 'background:#F9D5DF;color:#6B1D3F">مسح البيانات المحفوظة وإعادة التشغيل</button>' +
+        '<p style="margin:14px 0 4px;font-size:13px;color:#8A4A63">تفاصيل تقنية (أرسلها لمن يساعدك):</p>' +
+        '<pre id="mpc-detail" dir="ltr" style="margin:0;white-space:pre-wrap;word-break:break-word;font:12px/1.5 monospace;background:#fff;border-radius:10px;padding:10px;text-align:left"></pre>';
+      document.body.appendChild(d);
+      document.getElementById('mpc-detail').textContent = String(detail || errs.join(' | ') || 'unknown error') + '\n' + (navigator.userAgent || '');
+      document.getElementById('mpc-reload').onclick = function () { location.reload(); };
+      document.getElementById('mpc-clear').onclick = function () {
+        try { localStorage.removeItem('mypetcare.v1'); } catch (e) {}
+        location.reload();
+      };
+    } catch (e2) { /* nothing else we can do */ }
+  };
+  /* If the main script never reports ready (syntax error on an old browser, blocked script...), say so. */
+  setTimeout(function () { if (!W.__mpcReady) W.__mpcFail(errs.join(' | ')); }, 5000);
+  /* Fonts load after first paint, so a slow or blocked font host can never block the page. */
+  function addFonts() {
+    try {
+      var l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap';
+      document.head.appendChild(l);
+    } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(addFonts, 0); });
+  else setTimeout(addFonts, 0);
+})();
+</script>
+<style>
+/* Layout: one fixed phone-sized column (top bar, scrolling screen, bottom bar), centered on wide screens. */
+:root {
+  --bg: #FDEFF2;
+  --paper: #FFFAF8;
+  --ink: #6B1D3F;
+  --ink-soft: #8A4A63;
+  --pink: #F9D5DF;
+  --pink-line: #F2B9CA;
+  --btn: #C9547F;
+  --btn-press: #B0446C;
+  --lav: #E7E0F8;
+  --lav-d: #9886DB;
+  --blue: #DAEDFB;
+  --blue-d: #6FAEE6;
+  --green: #DDF1D6;
+  --green-d: #6FB45E;
+  --peach: #FDE6D2;
+  --peach-d: #E9A06A;
+  --ok: #2F9E62;
+  --danger: #B3263E;
+  --stage: #F6D9E1;
+  --font-ar: "Cairo", "Segoe UI", Tahoma, "Geeza Pro", "Noto Sans Arabic", "Noto Naskh Arabic", system-ui, -apple-system, sans-serif;
+  --font-brand: "Fraunces", Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--stage);
+  color: var(--ink);
+  font-family: var(--font-ar);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+button, input { font-family: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--lav-d); outline-offset: 2px; }
+
+#shell {
+  position: relative;
+  height: 100%;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-inline: auto;
+  background-color: var(--bg);
+  background-size: 140px 140px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--pink-line), 0 10px 40px rgba(107, 29, 63, .12);
+}
+#screen { display: flex; flex-direction: column; flex: 1; min-height: 0; animation: fade .25s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* top bar */
+.top {
+  flex: none;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 8px;
+}
+.top h1 { margin: 0; font-size: 20px; font-weight: 800; text-align: center; text-wrap: balance; }
+.icon-btn {
+  width: 44px; height: 44px; border-radius: 14px; border: 1.5px solid var(--pink-line);
+  background: var(--paper); color: var(--ink); display: grid; place-items: center; padding: 0;
+}
+.icon-btn:active { background: var(--pink); }
+.steps { display: flex; gap: 6px; padding: 0 20px 6px; align-items: end; }
+.steps i { flex: 1; height: 6px; border-radius: 6px; background: var(--pink-line); opacity: .55; }
+.steps i.on { opacity: 1; }
+.steps i.cur { height: 9px; }
+.step-label { text-align: center; font-size: 13px; color: var(--ink-soft); margin: 2px 0 6px; }
+
+main { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 8px 18px 20px; -webkit-overflow-scrolling: touch; }
+.bar { flex: none; padding: 10px 18px 14px; background: linear-gradient(to top, var(--bg) 70%, transparent); display: flex; flex-direction: column; gap: 8px; }
+.msg { margin: 0; min-height: 0; text-align: center; font-size: 14px; font-weight: 600; color: var(--danger); }
+.msg:empty { display: none; }
+.msg.shake { animation: shake .35s; }
+@keyframes shake { 20%,60% { transform: translateX(-5px); } 40%,80% { transform: translateX(5px); } }
+
+/* buttons */
+.btn {
+  width: 100%; min-height: 52px; border: 0; border-radius: 16px; padding: 10px 18px;
+  background: var(--btn); color: #fff; font-size: 17px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 0 var(--btn-press);
+}
+.btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--btn-press); }
+.btn.ghost { background: var(--pink); color: var(--ink); box-shadow: 0 4px 0 var(--pink-line); }
+.btn.ghost:active { box-shadow: 0 2px 0 var(--pink-line); }
+.btn.danger { background: #fff; color: var(--danger); border: 1.5px solid #E9B3BD; box-shadow: none; }
+.btn.small { min-height: 44px; font-size: 15px; width: auto; }
+.link { background: none; border: 0; color: var(--btn-press); font-weight: 700; font-size: 15px; padding: 8px 6px; text-decoration: underline; text-underline-offset: 3px; }
+
+/* cards */
+.card { background: var(--paper); border: 1.5px solid var(--pink-line); border-radius: 22px; padding: 14px; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.note {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.55;
+  background: var(--lav); border-radius: 16px; padding: 10px 12px; color: var(--ink);
+}
+.note svg { flex: none; margin-top: 2px; color: var(--lav-d); }
+.note.green { background: var(--green); }
+.note.green svg { color: var(--green-d); }
+
+/* login */
+.hero-art { position: relative; height: 150px; display: flex; justify-content: center; align-items: flex-end; margin-top: 4px; }
+.hero-art .a { width: 112px; height: 112px; }
+.hero-art .a.cat { margin-right: -22px; margin-inline-start: -22px; transform: translateY(6px); }
+.hero-art .heart { position: absolute; top: 6px; left: 24%; inset-inline-end: 24%; color: var(--btn); }
+.brand { text-align: center; margin: 2px 0 2px; }
+.brand b { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-brand); font-size: 38px; line-height: 1.1; color: var(--ink); direction: ltr; }
+.brand b svg { color: var(--btn); }
+.brand p { margin: 2px 0 0; color: var(--ink-soft); font-size: 15px; font-weight: 600; }
+.field { position: relative; }
+.field input {
+  width: 100%; height: 54px; padding: 0 48px; border-radius: 16px; border: 1.5px solid var(--pink-line);
+  background: var(--paper); color: var(--ink); font-size: 16px; text-align: start;
+}
+.field input::placeholder { color: #B58497; }
+.field .lead { position: absolute; right: 14px; inset-inline-start: 14px; top: 15px; color: var(--btn); pointer-events: none; }
+.field .trail { position: absolute; left: 4px; inset-inline-end: 4px; top: 5px; width: 44px; height: 44px; border: 0; background: none; color: var(--ink-soft); display: grid; place-items: center; }
+.field input:focus { border-color: var(--btn); outline: none; box-shadow: 0 0 0 3px var(--pink); }
+.field.has-trail input { padding-left: 50px; padding-inline-end: 50px; }
+.form-links { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 6px; font-size: 15px; color: var(--ink-soft); }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--blue); color: var(--ink); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; }
+.chip.pink { background: var(--pink); }
+.chip.green { background: var(--green); }
+.chip.lav { background: var(--lav); }
+.chip.peach { background: var(--peach); }
+.chip.red { background: #F9DADF; color: var(--danger); }
+
+/* pets */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pet {
+  position: relative; border-radius: 24px; border: 2px solid var(--pink-line); background: var(--paper); color: var(--ink);
+  padding: 16px 8px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 18px; font-weight: 700;
+  transition: transform .15s, background .15s, border-color .15s;
+}
+.pet .a { width: 92px; height: 92px; }
+.pet .tick { position: absolute; top: 10px; right: 10px; inset-inline-start: 10px; width: 28px; height: 28px; border-radius: 50%; background: var(--c-d); color: #fff; display: none; place-items: center; }
+.pet[aria-pressed="true"] { background: var(--c); border-color: var(--c-d); transform: scale(1.03); box-shadow: 0 6px 0 var(--c-d); }
+.pet[aria-pressed="true"] .tick { display: grid; }
+.t-lav { --c: var(--lav); --c-d: var(--lav-d); }
+.t-blue { --c: var(--blue); --c-d: var(--blue-d); }
+.t-green { --c: var(--green); --c-d: var(--green-d); }
+.t-peach { --c: var(--peach); --c-d: var(--peach-d); }
+
+/* vets */
+.vet {
+  width: 100%; text-align: start; display: grid; grid-template-columns: 60px 1fr 28px; gap: 12px; align-items: center;
+  background: var(--paper); border: 2px solid var(--pink-line); border-radius: 22px; padding: 12px; color: var(--ink);
+}
+.vet .av { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; }
+.vet h3 { margin: 0; font-size: 17px; font-weight: 800; }
+.vet .sub { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+.vet .clinic { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; margin-top: 2px; }
+.vet .clinic svg { color: var(--btn); flex: none; }
+.vet .radio { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--pink-line); display: grid; place-items: center; color: transparent; }
+.vet[aria-pressed="true"] { background: var(--blue); border-color: var(--blue-d); box-shadow: 0 5px 0 var(--blue-d); }
+.vet[aria-pressed="true"] .radio { background: var(--blue-d); border-color: var(--blue-d); color: #fff; }
+
+/* date and time */
+.sec-title { display: flex; align-items: center; gap: 8px; margin: 14px 2px 8px; font-size: 16px; font-weight: 800; }
+.sec-title svg { color: var(--btn); }
+.dates { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.day {
+  border-radius: 16px; border: 1.5px solid var(--pink-line); background: var(--paper); color: var(--ink);
+  padding: 8px 2px; display: flex; flex-direction: column; align-items: center; gap: 0; min-height: 84px; justify-content: center;
+}
+.day small { font-size: 12.5px; color: var(--ink-soft); line-height: 1.3; }
+.day strong { font-size: 24px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.day em { font-style: normal; font-size: 11px; font-weight: 700; color: var(--btn-press); }
+.day[aria-pressed="true"] { background: var(--pink); border-color: var(--btn); box-shadow: 0 4px 0 var(--btn); }
+.slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.slot {
+  min-height: 48px; border-radius: 14px; border: 1.5px solid var(--blue-d); background: var(--blue); color: var(--ink);
+  font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.slot[aria-pressed="true"] { background: var(--btn); border-color: var(--btn); color: #fff; box-shadow: 0 4px 0 var(--btn-press); }
+.slot[disabled] { background: #F3EAED; border-color: #E6D6DC; color: #A98E98; text-decoration: line-through; cursor: not-allowed; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 14px; border-radius: 5px; border: 1.5px solid; display: inline-block; }
+
+/* summary rows */
+.rows { display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; gap: 10px; padding: 12px 2px; border-bottom: 1px dashed var(--pink-line); min-height: 52px; }
+.row:last-child { border-bottom: 0; }
+.row .ic { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--pink); color: var(--btn-press); flex: none; }
+.row .k { color: var(--ink-soft); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.row .v { margin-right: auto; margin-inline-start: auto; font-weight: 700; text-align: end; min-width: 0; overflow-wrap: anywhere; }
+.row .edit { flex: none; border: 0; background: none; color: var(--btn-press); font-weight: 700; font-size: 13px; padding: 8px 4px; min-width: 44px; min-height: 44px; }
+.price-row .v { font-size: 22px; color: var(--btn-press); }
+
+/* done */
+.done { text-align: center; }
+.check { width: 112px; height: 112px; border-radius: 50%; background: var(--ok); color: #fff; display: grid; place-items: center; margin: 8px auto 12px; box-shadow: 0 0 0 10px #D7F0E1; animation: pop .5s cubic-bezier(.2,1.4,.4,1); }
+@keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+.done h2 { margin: 0; font-size: 24px; font-weight: 800; }
+.refbox { display: inline-block; margin: 6px 0 14px; padding: 8px 28px; border-radius: 16px; background: var(--pink); font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 2px; direction: ltr; }
+.done .rows { text-align: start; }
+
+/* home */
+.hello { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0 12px; }
+.hello h1 { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.25; }
+.hello p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+.avatar-paw { width: 50px; height: 50px; border-radius: 50%; background: var(--pink); color: var(--btn); display: grid; place-items: center; flex: none; }
+.banner { position: relative; overflow: hidden; border-radius: 26px; background: linear-gradient(135deg, #F9D5DF, #FDE6E0); border: 1.5px solid var(--pink-line); padding: 18px; min-height: 164px; }
+.banner h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; max-width: 62%; line-height: 1.35; }
+.banner p { margin: 0 0 12px; font-size: 13.5px; color: var(--ink-soft); max-width: 62%; }
+.banner .pair { position: absolute; left: 6px; inset-inline-end: 6px; bottom: 6px; width: 40%; display: flex; align-items: flex-end; }
+.banner .pair .a { width: 56%; }
+.banner .pair .a + .a { margin-right: -14%; margin-inline-start: -14%; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tile { border: 0; border-radius: 22px; padding: 14px; text-align: start; color: var(--ink); display: flex; flex-direction: column; gap: 8px; min-height: 112px; }
+.tile .ic { width: 40px; height: 40px; border-radius: 13px; background: rgba(255,255,255,.7); display: grid; place-items: center; }
+.tile b { font-size: 16px; font-weight: 800; }
+.tile span { font-size: 13px; color: var(--ink-soft); }
+.tile.lav { background: var(--lav); }
+.tile.blue { background: var(--blue); }
+
+/* lists */
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--pink); border-radius: 16px; margin-bottom: 12px; }
+.seg button { min-height: 42px; border: 0; background: transparent; border-radius: 12px; color: var(--ink); font-weight: 700; font-size: 14.5px; }
+.seg button[aria-pressed="true"] { background: var(--paper); box-shadow: 0 1px 4px rgba(107,29,63,.15); }
+.bk { width: 100%; display: grid; grid-template-columns: 54px 1fr 20px; gap: 12px; align-items: center; text-align: start; color: var(--ink); background: var(--paper); border: 1.5px solid var(--pink-line); border-radius: 20px; padding: 12px; }
+.bk .pic { width: 54px; height: 54px; border-radius: 16px; background: var(--c); display: grid; place-items: center; }
+.bk .pic .a { width: 44px; height: 44px; }
+.bk h3 { margin: 0; font-size: 16px; font-weight: 800; }
+.bk p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.bk .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.bk.cancelled { opacity: .72; }
+.empty { text-align: center; padding: 28px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.empty .a { width: 110px; height: 110px; }
+.empty h3 { margin: 0; font-size: 19px; font-weight: 800; }
+.empty p { margin: 0; color: var(--ink-soft); font-size: 14.5px; max-width: 28ch; }
+
+/* bottom nav */
+.nav { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px 12px 10px; background: var(--paper); border-top: 1.5px solid var(--pink-line); }
+.nav button { border: 0; background: none; color: var(--ink-soft); min-height: 54px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 12.5px; font-weight: 700; }
+.nav button[aria-current="page"] { background: var(--pink); color: var(--ink); }
+
+/* modal and toast */
+#modal { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 30; background: rgba(107, 29, 63, .45); display: none; align-items: flex-end; justify-content: center; padding: 16px; }
+#modal.open { display: flex; }
+.sheet { width: 100%; background: var(--paper); border-radius: 26px; padding: 22px 18px 18px; display: flex; flex-direction: column; gap: 10px; animation: fade .2s ease; }
+.sheet h2 { margin: 0; font-size: 20px; font-weight: 800; }
+.sheet p { margin: 0 0 6px; color: var(--ink-soft); font-size: 15px; }
+#toast { position: absolute; z-index: 40; left: 16px; right: 16px; bottom: 96px; display: flex; justify-content: center; pointer-events: none; }
+#toast div { background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14.5px; font-weight: 700; box-shadow: 0 8px 24px rgba(107,29,63,.3); animation: fade .2s ease; max-width: 100%; text-align: center; }
+.paw-deco { position: absolute; color: var(--pink-line); opacity: .7; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+@media (max-height: 640px) {
+  .hero-art { height: 110px; }
+  .hero-art .a { width: 84px; height: 84px; }
+  .brand b { font-size: 32px; }
+}
+</style>
+<style>body{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+<noscript><div dir="rtl" style="padding:24px;font:16px/1.7 Tahoma,Arial,sans-serif;color:#6B1D3F;text-align:right">يحتاج تطبيق My Pet Care إلى تفعيل JavaScript في المتصفح.</div></noscript>
+<div id="shell">
+  <div id="screen"></div>
+  <div id="toast" aria-live="polite"></div>
+  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- helpers ---------- */
+  var AR = 'ar-EG-u-nu-latn';
+  var KEY = 'mypetcare.v1';
+  var PRICE = 150;
+  var $ = function (s) { return document.querySelector(s); };
+  var num = function (n) { try { return Number(n).toLocaleString(AR); } catch (e) { return String(n); } };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  /* ---------- icons (lucide-style, 24px grid) ---------- */
+  var IC = {
+    user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+    eyeOff: '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>',
+    back: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+    chevron: '<path d="m15 18-6-6 6-6"/>',
+    home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+    calendar: '<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>',
+    calCheck: '<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="m9 16 2 2 4-4"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    building: '<rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>',
+    steth: '<path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/>',
+    cash: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+    list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+    moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+    out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+    trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+    info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+    heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+    ticket: '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/>',
+    plus: '<path d="M5 12h14"/><path d="M12 5v14"/>'
+  };
+  function icon(n, s, sw) {
+    s = s || 22;
+    return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC[n] + '</svg>';
+  }
+  function paw(size, cls) {
+    return '<svg class="' + (cls || '') + '" width="' + size + '" height="' + size + '" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">' +
+      '<path d="M50 54c-13 0-22 9-22 18 0 8 6 11 13 9 4-1 6-2 9-2s5 1 9 2c7 2 13-1 13-9 0-9-9-18-22-18z"/>' +
+      '<ellipse cx="22" cy="44" rx="8.5" ry="11" transform="rotate(-18 22 44)"/><ellipse cx="39" cy="26" rx="9" ry="12"/>' +
+      '<ellipse cx="61" cy="26" rx="9" ry="12"/><ellipse cx="78" cy="44" rx="8.5" ry="11" transform="rotate(18 78 44)"/></svg>';
+  }
+
+  /* ---------- illustrations ---------- */
+  var ART = {
+    dog: '<svg class="a" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="20" cy="50" rx="13" ry="25" fill="#C98748" transform="rotate(12 20 50)"/><ellipse cx="80" cy="50" rx="13" ry="25" fill="#C98748" transform="rotate(-12 80 50)"/><circle cx="50" cy="53" r="31" fill="#F2BA7E"/><ellipse cx="50" cy="66" rx="18" ry="14" fill="#FFF5E8"/><circle cx="36" cy="48" r="4.2" fill="#4A2B2B"/><circle cx="64" cy="48" r="4.2" fill="#4A2B2B"/><circle cx="37.4" cy="46.6" r="1.4" fill="#fff"/><circle cx="65.4" cy="46.6" r="1.4" fill="#fff"/><circle cx="28" cy="60" r="5" fill="#F7A5B5" opacity=".6"/><circle cx="72" cy="60" r="5" fill="#F7A5B5" opacity=".6"/><path d="M45 74q5 12 10 0z" fill="#F08AA6"/><ellipse cx="50" cy="59" rx="6.5" ry="4.5" fill="#4A2B2B"/><path d="M50 63v5M50 68c-3 4-9 3-10-1M50 68c3 4 9 3 10-1" stroke="#4A2B2B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+    cat: '<svg class="a" viewBox="0 0 100 100" aria-hidden="true"><path d="M17 44 22 10 47 28Z" fill="#9A9AA8"/><path d="M83 44 78 10 53 28Z" fill="#9A9AA8"/><path d="M25 33 27 19 39 28Z" fill="#F6B8C8"/><path d="M75 33 73 19 61 28Z" fill="#F6B8C8"/><ellipse cx="50" cy="57" rx="34" ry="30" fill="#B7B7C3"/><path d="M50 28v9M42 29l2 8M58 29l-2 8" stroke="#8E8E9C" stroke-width="3" stroke-linecap="round"/><ellipse cx="50" cy="68" rx="17" ry="12" fill="#fff"/><ellipse cx="36" cy="54" rx="4.4" ry="5.4" fill="#3B3347"/><ellipse cx="64" cy="54" rx="4.4" ry="5.4" fill="#3B3347"/><circle cx="37.4" cy="52" r="1.5" fill="#fff"/><circle cx="65.4" cy="52" r="1.5" fill="#fff"/><path d="M46 62h8l-4 4.5z" fill="#F08AA6"/><path d="M50 66.5c-2 5-8 4-10 1M50 66.5c2 5 8 4 10 1" stroke="#3B3347" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M24 62h-12M24 67l-11 4M76 62h12M76 67l11 4" stroke="#8E8E9C" stroke-width="1.8" stroke-linecap="round"/><circle cx="27" cy="64" r="5" fill="#F7A5B5" opacity=".55"/><circle cx="73" cy="64" r="5" fill="#F7A5B5" opacity=".55"/></svg>',
+    rabbit: '<svg class="a" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="36" cy="26" rx="9.5" ry="23" fill="#fff" stroke="#E4CBD5" stroke-width="2"/><ellipse cx="64" cy="26" rx="9.5" ry="23" fill="#fff" stroke="#E4CBD5" stroke-width="2" transform="rotate(8 64 26)"/><ellipse cx="36" cy="28" rx="4.5" ry="15" fill="#F8C6D4"/><ellipse cx="64.5" cy="28" rx="4.5" ry="15" fill="#F8C6D4" transform="rotate(8 64 28)"/><circle cx="50" cy="64" r="29" fill="#fff" stroke="#E4CBD5" stroke-width="2"/><circle cx="38" cy="60" r="4" fill="#4A3340"/><circle cx="62" cy="60" r="4" fill="#4A3340"/><circle cx="39.3" cy="58.6" r="1.4" fill="#fff"/><circle cx="63.3" cy="58.6" r="1.4" fill="#fff"/><circle cx="29" cy="71" r="5" fill="#F7A5B5" opacity=".55"/><circle cx="71" cy="71" r="5" fill="#F7A5B5" opacity=".55"/><path d="M46 68h8l-4 4z" fill="#F08AA6"/><path d="M50 72c-2 5-7 4-9 1M50 72c2 5 7 4 9 1" stroke="#4A3340" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+    bird: '<svg class="a" viewBox="0 0 100 100" aria-hidden="true"><path d="M32 78 16 96l26-6z" fill="#4FA3D9"/><ellipse cx="52" cy="56" rx="30" ry="33" fill="#8ACB6F"/><ellipse cx="57" cy="68" rx="18" ry="20" fill="#F7E58B"/><path d="M46 26c-3-12 7-16 14-12-5 2-5 7-4 13z" fill="#5FAE53"/><circle cx="42" cy="42" r="5" fill="#2F3A2A"/><circle cx="43.6" cy="40.4" r="1.6" fill="#fff"/><circle cx="33" cy="52" r="5" fill="#F7A5B5" opacity=".6"/><path d="M26 46 10 52l17 6z" fill="#F4A140"/><path d="M62 48q24 4 17 32-20-4-17-32z" fill="#5FAE53"/><path d="M44 88v6M56 88v6" stroke="#F4A140" stroke-width="3" stroke-linecap="round"/></svg>'
+  };
+  var PETS = [
+    { id: 'dog', ar: 'كلب', tint: 't-lav' },
+    { id: 'cat', ar: 'قط', tint: 't-blue' },
+    { id: 'rabbit', ar: 'أرنب', tint: 't-green' },
+    { id: 'bird', ar: 'طائر', tint: 't-peach' }
+  ];
+  var PET = {};
+  PETS.forEach(function (p) { PET[p.id] = p; });
+
+  function avatar(bg, hair, longHair) {
+    return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="' + bg + '"/>' +
+      (longHair ? '<path d="M19 30c-2-15 6-19 13-19s15 4 13 19v15H19z" fill="' + hair + '"/>' : '') +
+      '<path d="M10 64c0-14 10-20 22-20s22 6 22 20z" fill="#fff"/><path d="M26 44l6 11 6-11z" fill="#DDE9F5"/>' +
+      '<circle cx="32" cy="29" r="10" fill="#F3C9A5"/>' +
+      (longHair ? '<path d="M22 27c1-8 6-11 10-11s9 3 10 11c-4-3-7-4-10-4s-6 1-10 4z" fill="' + hair + '"/>' : '<path d="M22 27c-1-9 5-13 10-13s11 4 10 13c-3-4-6-5-10-5s-7 1-10 5z" fill="' + hair + '"/>') +
+      '<circle cx="28.5" cy="30" r="1.3" fill="#4A2B2B"/><circle cx="35.5" cy="30" r="1.3" fill="#4A2B2B"/><path d="M29 34q3 2.5 6 0" stroke="#B4574D" stroke-width="1.4" fill="none" stroke-linecap="round"/>' +
+      '<path d="M22 46v5a6 6 0 0 0 12 0" stroke="#6B1D3F" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+  }
+
+  var VETS = [
+    { id: 'v1', name: 'د. أحمد علي', title: 'طبيب بيطري', spec: 'الكلاب والقطط', clinic: 'عيادة الحيوانات الأليفة', av: avatar('#DAEDFB', '#3D2B2B', false) },
+    { id: 'v2', name: 'د. سارة محمد', title: 'طبيبة بيطرية', spec: 'الأرانب والطيور', clinic: 'عيادة الأليف السعيد', av: avatar('#DDF1D6', '#5A3326', true) },
+    { id: 'v3', name: 'د. خالد ناصر', title: 'طبيب بيطري', spec: 'التطعيمات والفحص العام', clinic: 'مركز رعاية الحيوانات', av: avatar('#E7E0F8', '#2E2A3A', false) }
+  ];
+  function vetById(id) { return VETS.filter(function (v) { return v.id === id; })[0]; }
+
+  var SLOTS = [
+    { id: '09:00', h: 9, label: '9:00 ص', part: 'am' },
+    { id: '10:00', h: 10, label: '10:00 ص', part: 'am' },
+    { id: '11:00', h: 11, label: '11:00 ص', part: 'am' },
+    { id: '16:00', h: 16, label: '4:00 م', part: 'pm' },
+    { id: '17:00', h: 17, label: '5:00 م', part: 'pm' },
+    { id: '18:00', h: 18, label: '6:00 م', part: 'pm' },
+    { id: '19:00', h: 19, label: '7:00 م', part: 'pm' }
+  ];
+  function slotById(id) { return SLOTS.filter(function (s) { return s.id === id; })[0]; }
+
+  /* ---------- storage ---------- */
+  function defaults() {
+    return { users: { demo: { name: 'مستخدم تجريبي', pass: '1234' } }, session: null, bookings: [], draft: {} };
+  }
+  var db = defaults();
+  (function loadDb() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if (d && typeof d === 'object') {
+        if (d.users && typeof d.users === 'object') {
+          var cleanUsers = {};
+          Object.keys(d.users).forEach(function (k) {
+            var r = d.users[k];
+            if (r && typeof r.name === 'string' && typeof r.pass === 'string') cleanUsers[k] = r;
+          });
+          db.users = cleanUsers;
+        }
+        if (!db.users.demo) db.users.demo = defaults().users.demo;
+        db.session = d.session && db.users[d.session] ? d.session : null;
+        db.bookings = Array.isArray(d.bookings) ? d.bookings.filter(function (b) {
+          return b && typeof b === 'object' && PET[b.pet] && b.id && typeof b.date === 'string' && slotById(b.time) && b.vetName && typeof b.price === 'number' && (b.status === 'active' || b.status === 'cancelled');
+        }) : [];
+        db.draft = d.draft && typeof d.draft === 'object' && !Array.isArray(d.draft) ? d.draft : {};
+      }
+    } catch (e) { /* storage unavailable: keep in-memory state */ }
+  })();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { /* ignore */ } }
+
+  /* ---------- dates ---------- */
+  function two(n) { return (n < 10 ? '0' : '') + n; }
+  function keyOf(d) { return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()); }
+  function fromKey(k) { var p = k.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function addDays(d, n) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); return x; }
+  function fmt(d, o) { try { return d.toLocaleDateString(AR, o); } catch (e) { return keyOf(d); } }
+  function longDate(k) { return fmt(fromKey(k), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+  function shortDate(k) { return fmt(fromKey(k), { weekday: 'long', day: 'numeric', month: 'long' }); }
+  function todayKey() { return keyOf(new Date()); }
+  function upcomingDays() {
+    var t = new Date(), out = [];
+    for (var i = 0; i < 8; i++) out.push(addDays(t, i));
+    return out;
+  }
+  function hash(s) { var h = 7; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+
+  /* A slot is unavailable when it has passed, is taken in the sample schedule, or is already booked here. */
+  function slotState(dateKey, slotId, vetId) {
+    var s = slotById(slotId), now = new Date();
+    if (dateKey < todayKey()) return 'past';
+    if (dateKey === todayKey() && s.h * 60 <= now.getHours() * 60 + now.getMinutes()) return 'past';
+    if (hash(dateKey + '|' + vetId + '|' + slotId) % 4 === 0) return 'taken';
+    var clash = db.bookings.some(function (b) { return b.status === 'active' && b.vet === vetId && b.date === dateKey && b.time === slotId; });
+    return clash ? 'taken' : 'free';
+  }
+
+  /* ---------- state ---------- */
+  var route = 'login', params = {}, bFilter = 'all';
+  function me() { return db.session ? db.users[db.session] : null; }
+  function myBookings() { return db.bookings.filter(function (b) { return b.user === db.session; }); }
+  function draft() { return db.draft; }
+  function resetDraft() { db.draft = {}; save(); }
+
+  var FLOW = { pet: 1, vet: 2, time: 3, summary: 4 };
+  var BACK = { pet: 'home', vet: 'pet', time: 'vet', summary: 'time', register: 'login', bookings: 'home', settings: 'home', detail: 'bookings', done: 'home' };
+  var STEP_COLORS = ['var(--btn)', 'var(--lav-d)', 'var(--blue-d)', 'var(--green-d)'];
+
+  /* ---------- views ---------- */
+  function top(title, step) {
+    var h = '<header class="top"><button class="icon-btn" data-act="back" aria-label="رجوع">' + icon('back') + '</button><h1>' + title + '</h1><span></span></header>';
+    if (step) {
+      var segs = '';
+      for (var i = 1; i <= 4; i++) {
+        segs += '<i class="' + (i <= step ? 'on ' : '') + (i === step ? 'cur' : '') + '" style="' + (i <= step ? 'background:' + STEP_COLORS[i - 1] : '') + '"></i>';
+      }
+      h += '<div class="steps" aria-hidden="true">' + segs + '</div><p class="step-label">الخطوة ' + num(step) + ' من ' + num(4) + '</p>';
+    }
+    return h;
+  }
+  function bar(label, act) {
+    return '<footer class="bar"><p class="msg" id="msg" role="alert"></p><button class="btn" data-act="' + act + '">' + label + '</button></footer>';
+  }
+  function nav(cur) {
+    var items = [['home', 'الرئيسية', 'home'], ['bookings', 'حجوزاتي', 'calCheck'], ['settings', 'الإعدادات', 'gear']];
+    return '<nav class="nav" aria-label="التنقل الرئيسي">' + items.map(function (i) {
+      return '<button data-act="go" data-to="' + i[0] + '"' + (cur === i[0] ? ' aria-current="page"' : '') + '>' + icon(i[2], 24) + '<span>' + i[1] + '</span></button>';
+    }).join('') + '</nav>';
+  }
+  function demoNote(t) { return '<div class="note">' + icon('info', 18) + '<span>' + t + '</span></div>'; }
+
+  function vLogin() {
+    return '<main><div class="stack">' +
+      '<div class="hero-art">' + ART.dog + ART.cat + '<span class="heart">' + icon('heart', 22) + '</span></div>' +
+      '<div class="brand"><b>' + paw(34) + 'My Pet Care</b><p>حجز مواعيد العيادات البيطرية بكل سهولة</p></div>' +
+      '<form data-form="login" class="stack" novalidate>' +
+      '<div class="field"><span class="lead">' + icon('user', 20) + '</span><input id="username" name="username" type="text" dir="auto" autocomplete="username" autocapitalize="none" placeholder="اسم المستخدم" aria-label="اسم المستخدم"></div>' +
+      '<div class="field has-trail"><span class="lead">' + icon('lock', 20) + '</span><input id="password" name="password" type="password" dir="auto" autocomplete="current-password" placeholder="كلمة المرور" aria-label="كلمة المرور"><button type="button" class="trail" data-act="togglePw" aria-label="إظهار كلمة المرور">' + icon('eye', 20) + '</button></div>' +
+      '<p class="msg" id="msg" role="alert"></p>' +
+      '<button class="btn" type="submit">تسجيل الدخول</button></form>' +
+      '<div class="form-links"><span>ليس لديك حساب؟</span><button class="link" data-act="go" data-to="register">إنشاء حساب</button></div>' +
+      '<div class="note green">' + icon('info', 18) + '<span>نموذج تجريبي. الحسابات تُحفظ على هذا الجهاز فقط، فلا تستخدم كلمة مرور حقيقية. للتجربة السريعة: <button class="link" data-act="fillDemo" style="padding:0;font-size:inherit">استخدم الحساب التجريبي</button></span></div>' +
+      '</div></main>';
+  }
+
+  function vRegister() {
+    return top('إنشاء حساب') + '<main><div class="stack">' +
+      '<div class="hero-art" style="height:110px">' + ART.rabbit + '</div>' +
+      '<form data-form="register" class="stack" novalidate>' +
+      '<div class="field"><span class="lead">' + icon('user', 20) + '</span><input id="rname" name="name" type="text" autocomplete="name" placeholder="الاسم" aria-label="الاسم"></div>' +
+      '<div class="field"><span class="lead">' + icon('user', 20) + '</span><input id="runame" name="username" type="text" dir="auto" autocomplete="username" autocapitalize="none" placeholder="اسم المستخدم (٣ أحرف على الأقل)" aria-label="اسم المستخدم"></div>' +
+      '<div class="field has-trail"><span class="lead">' + icon('lock', 20) + '</span><input id="rpass" name="password" type="password" dir="auto" autocomplete="new-password" placeholder="كلمة المرور (٤ أحرف على الأقل)" aria-label="كلمة المرور"><button type="button" class="trail" data-act="togglePw" aria-label="إظهار كلمة المرور">' + icon('eye', 20) + '</button></div>' +
+      '<div class="field"><span class="lead">' + icon('lock', 20) + '</span><input id="rpass2" name="confirm" type="password" dir="auto" autocomplete="new-password" placeholder="تأكيد كلمة المرور" aria-label="تأكيد كلمة المرور"></div>' +
+      '<p class="msg" id="msg" role="alert"></p>' +
+      '<button class="btn" type="submit">إنشاء حساب</button></form>' +
+      demoNote('هذا حساب تجريبي محفوظ في متصفحك فقط، ولا يُرسل إلى أي خادم.') +
+      '</div></main>';
+  }
+
+  function vHome() {
+    var u = me(), list = myBookings(), act = list.filter(function (b) { return b.status === 'active'; });
+    var tk = todayKey();
+    var next = act.filter(function (b) { return b.date >= tk; }).sort(function (a, b) { return (a.date + a.time) < (b.date + b.time) ? -1 : 1; })[0];
+    var nextHtml = next
+      ? '<div class="sec-title">' + icon('calCheck', 20) + 'موعدك القادم</div>' + bookingCard(next)
+      : '';
+    return '<main><div class="hello"><div><p>أهلاً بك</p><h1>مرحباً، ' + esc(u.name) + '</h1></div><div class="avatar-paw">' + paw(28) + '</div></div>' +
+      '<div class="stack">' +
+      '<section class="banner"><h2>احجز موعد العيادة البيطرية بكل سهولة</h2><p>اختر الحيوان والطبيب والموعد في أربع خطوات.</p>' +
+      '<button class="btn small" data-act="startBooking">' + icon('plus', 18) + 'احجز موعداً</button>' +
+      '<div class="pair">' + ART.dog + ART.cat + '</div></section>' +
+      '<div class="tiles">' +
+      '<button class="tile lav" data-act="startBooking"><span class="ic">' + icon('calendar', 22) + '</span><b>حجز جديد</b><span>ابدأ حجز موعد</span></button>' +
+      '<button class="tile blue" data-act="go" data-to="bookings"><span class="ic">' + icon('list', 22) + '</span><b>حجوزاتي</b><span>' + num(act.length) + ' حجز نشط</span></button>' +
+      '</div>' + nextHtml +
+      demoNote('نموذج تجريبي: الأطباء والمواعيد والأسعار بيانات توضيحية، ولا تُرسل الحجوزات إلى عيادات حقيقية.') +
+      '</div></main>' + nav('home');
+  }
+
+  function vPet() {
+    var d = draft();
+    return top('اختر نوع الحيوان', 1) + '<main><div class="grid2">' + PETS.map(function (p) {
+      return '<button class="pet ' + p.tint + '" data-act="pickPet" data-id="' + p.id + '" aria-pressed="' + (d.pet === p.id) + '">' +
+        '<span class="tick">' + icon('check', 18, 3) + '</span>' + ART[p.id] + '<span>' + p.ar + '</span></button>';
+    }).join('') + '</div></main>' + bar('التالي', 'nextPet');
+  }
+
+  function vVet() {
+    var d = draft();
+    return top('الأطباء البيطريون', 2) + '<main><div class="stack">' + demoNote('بيانات الأطباء والعيادات تجريبية لأغراض العرض فقط.') +
+      VETS.map(function (v) {
+        return '<button class="vet" data-act="pickVet" data-id="' + v.id + '" aria-pressed="' + (d.vet === v.id) + '">' +
+          '<span class="av">' + v.av + '</span><span><h3>' + v.name + '</h3><p class="sub">' + v.title + ' · ' + v.spec + '</p>' +
+          '<span class="clinic">' + icon('building', 16) + v.clinic + '</span></span><span class="radio">' + icon('check', 16, 3) + '</span></button>';
+      }).join('') + '</div></main>' + bar('اختيار الطبيب', 'nextVet');
+  }
+
+  function vTime() {
+    var d = draft(), days = upcomingDays();
+    if (d.date && d.date < todayKey()) { d.date = null; d.time = null; }
+    var dayHtml = days.map(function (dt, i) {
+      var k = keyOf(dt);
+      return '<button class="day" data-act="pickDate" data-id="' + k + '" aria-pressed="' + (d.date === k) + '"><small>' + fmt(dt, { weekday: 'long' }) + '</small><strong>' + num(dt.getDate()) + '</strong><small>' + fmt(dt, { month: 'long' }) + '</small>' + (i === 0 ? '<em>اليوم</em>' : '') + '</button>';
+    }).join('');
+    function slotGroup(part, title, ic) {
+      var html = SLOTS.filter(function (s) { return s.part === part; }).map(function (s) {
+        var st = d.date ? slotState(d.date, s.id, d.vet) : 'free';
+        var dis = st !== 'free';
+        return '<button class="slot" data-act="pickTime" data-id="' + s.id + '" aria-pressed="' + (d.time === s.id && !dis) + '"' + (dis ? ' disabled aria-label="' + s.label + ' غير متاح"' : '') + '>' + s.label + '</button>';
+      }).join('');
+      return '<div class="sec-title">' + icon(ic, 20) + title + '</div><div class="slots">' + html + '</div>';
+    }
+    return top('اختر الموعد المناسب', 3) + '<main>' +
+      '<div class="sec-title" style="margin-top:0">' + icon('calendar', 20) + 'التاريخ</div><div class="dates">' + dayHtml + '</div>' +
+      slotGroup('am', 'الفترة الصباحية', 'sun') + slotGroup('pm', 'الفترة المسائية', 'moon') +
+      '<div class="legend"><span><i style="background:var(--blue);border-color:var(--blue-d)"></i>متاح</span><span><i style="background:var(--btn);border-color:var(--btn)"></i>محدد</span><span><i style="background:#F3EAED;border-color:#E6D6DC"></i>غير متاح</span></div>' +
+      '<div style="margin-top:12px">' + demoNote('التواريخ والأوقات المعروضة تجريبية لأغراض العرض فقط.') + '</div>' +
+      '</main>' + bar('التالي', 'nextTime');
+  }
+
+  function row(ic, k, v, edit, extra) {
+    return '<div class="row ' + (extra || '') + '"><span class="ic">' + icon(ic, 18) + '</span><span class="k">' + k + '</span><span class="v">' + v + '</span>' +
+      (edit ? '<button class="edit" data-act="go" data-to="' + edit + '" aria-label="تعديل ' + k + '">تعديل</button>' : '') + '</div>';
+  }
+
+  function vSummary() {
+    var d = draft(), v = vetById(d.vet), s = slotById(d.time), p = PET[d.pet];
+    if (!v || !s || !p || !d.date) return '<main><div class="empty"><h3>بيانات الحجز غير مكتملة</h3><button class="btn" data-act="startBooking">ابدأ من جديد</button></div></main>';
+    return top('تفاصيل الحجز', 4) + '<main><div class="stack"><div class="card"><div class="rows">' +
+      row('heart', 'نوع الحيوان', p.ar, 'pet') + row('steth', 'الطبيب', v.name, 'vet') + row('building', 'العيادة', v.clinic, 'vet') +
+      row('calendar', 'التاريخ', longDate(d.date), 'time') + row('clock', 'الوقت', s.label, 'time') +
+      row('cash', 'المبلغ', num(PRICE) + ' ريال', null, 'price-row') +
+      '</div><span class="chip peach">السعر تجريبي</span></div>' +
+      demoNote('هذا نموذج تجريبي. تأكيد الحجز يحفظه في متصفحك فقط، ولا يُرسل إلى أي عيادة حقيقية.') +
+      '</div></main><footer class="bar"><p class="msg" id="msg" role="alert"></p><button class="btn" data-act="confirm">تأكيد الحجز</button><button class="btn ghost" data-act="go" data-to="time">تعديل الموعد</button></footer>';
+  }
+
+  function detailRows(b) {
+    return row('ticket', 'رقم الحجز', '<span dir="ltr">#' + b.id + '</span>') + row('heart', 'نوع الحيوان', PET[b.pet].ar) + row('steth', 'الطبيب', esc(b.vetName)) +
+      row('building', 'العيادة', esc(b.clinic)) + row('calendar', 'التاريخ', longDate(b.date)) + row('clock', 'الوقت', b.timeLabel) +
+      row('cash', 'المبلغ', num(b.price) + ' ريال (تجريبي)');
+  }
+
+  function vDone() {
+    var b = db.bookings.filter(function (x) { return x.id === params.id; })[0];
+    if (!b) return '<main><div class="empty"><h3>لم يتم العثور على الحجز</h3><button class="btn" data-act="go" data-to="home">العودة إلى الصفحة الرئيسية</button></div></main>';
+    return '<main class="done"><div class="check">' + icon('check', 64, 3) + '</div><h2>تم حجز موعدك بنجاح!</h2><p style="margin:2px 0 0;color:var(--ink-soft)">رقم الحجز</p>' +
+      '<div class="refbox">' + b.id + '</div>' +
+      '<div class="card" style="margin-bottom:12px"><div class="rows">' + row('calendar', 'التاريخ', shortDate(b.date)) + row('clock', 'الوقت', b.timeLabel) + row('steth', 'الطبيب', esc(b.vetName)) + row('heart', 'نوع الحيوان', PET[b.pet].ar) + '</div></div>' +
+      '<div class="stack"><button class="btn" data-act="go" data-to="home">العودة إلى الصفحة الرئيسية</button><button class="btn ghost" data-act="go" data-to="bookings">' + icon('list', 20) + 'حجوزاتي</button>' +
+      demoNote('حجز تجريبي محفوظ في هذا المتصفح فقط، ولم يُرسل إلى أي عيادة.') + '</div></main>';
+  }
+
+  function badge(b) {
+    return b.status === 'active' ? '<span class="chip green">مؤكد</span>' : '<span class="chip red">ملغي</span>';
+  }
+  function bookingCard(b) {
+    var p = PET[b.pet];
+    return '<button class="bk ' + (b.status === 'cancelled' ? 'cancelled' : '') + '" data-act="openBooking" data-id="' + b.id + '"><span class="pic ' + p.tint + '">' + ART[b.pet] + '</span>' +
+      '<span><h3>' + esc(b.vetName) + '</h3><p>' + shortDate(b.date) + ' · ' + b.timeLabel + '</p><span class="meta">' + badge(b) + '<span class="chip pink" dir="ltr">#' + b.id + '</span></span></span>' +
+      '<span style="color:var(--ink-soft)">' + icon('chevron', 20) + '</span></button>';
+  }
+
+  function vBookings() {
+    var all = myBookings().sort(function (a, b) { return b.createdAt - a.createdAt; });
+    var list = all.filter(function (b) { return bFilter === 'all' || (bFilter === 'active' ? b.status === 'active' : b.status === 'cancelled'); });
+    var seg = [['all', 'الكل'], ['active', 'مؤكدة'], ['cancelled', 'ملغية']].map(function (s) {
+      return '<button data-act="filter" data-id="' + s[0] + '" aria-pressed="' + (bFilter === s[0]) + '">' + s[1] + '</button>';
+    }).join('');
+    var body;
+    if (!list.length) {
+      body = '<div class="empty">' + ART.cat + '<h3>' + (all.length ? 'لا توجد حجوزات في هذا التصنيف' : 'لا توجد حجوزات بعد') + '</h3><p>' + (all.length ? 'جرّب تصنيفاً آخر.' : 'احجز موعدك الأول مع طبيب بيطري.') + '</p><button class="btn small" data-act="startBooking">احجز موعداً</button></div>';
+    } else {
+      body = '<div class="stack">' + list.map(bookingCard).join('') + '</div>';
+    }
+    return top('حجوزاتي') + '<main><div class="seg" role="group" aria-label="تصفية الحجوزات">' + seg + '</div>' + body + '</main>' + nav('bookings');
+  }
+
+  function vDetail() {
+    var b = db.bookings.filter(function (x) { return x.id === params.id; })[0];
+    if (!b) return top('تفاصيل الحجز') + '<main><div class="empty"><h3>لم يتم العثور على الحجز</h3></div></main>';
+    return top('تفاصيل الحجز') + '<main><div class="stack"><div style="display:flex;justify-content:center">' + badge(b) + '</div>' +
+      '<div class="card"><div class="rows">' + detailRows(b) + '</div></div>' +
+      (b.status === 'active'
+        ? '<button class="btn danger" data-act="cancelAsk" data-id="' + b.id + '">' + icon('trash', 20) + 'إلغاء الحجز</button>'
+        : demoNote('تم إلغاء هذا الحجز، وأصبح الموعد متاحاً مرة أخرى.')) +
+      demoNote('حجز تجريبي محفوظ في هذا المتصفح فقط.') + '</div></main>';
+  }
+
+  function vSettings() {
+    var u = me();
+    return top('الإعدادات') + '<main><div class="stack">' +
+      '<div class="card" style="display:flex;align-items:center;gap:12px"><div class="avatar-paw">' + paw(28) + '</div><div style="min-width:0"><b style="font-size:18px">' + esc(u.name) + '</b><br><span style="color:var(--ink-soft);font-size:14px" dir="ltr">@' + esc(db.session) + '</span></div></div>' +
+      '<div class="card"><h3 style="margin:0 0 6px;font-size:16px">عن هذا النموذج</h3><p style="margin:0;color:var(--ink-soft);font-size:14.5px">My Pet Care نموذج تجريبي لمشروع مدرسي. الأطباء والعيادات والمواعيد والأسعار بيانات توضيحية. الحسابات والحجوزات تُحفظ في متصفح هذا الجهاز فقط ولا تتشارك بين المستخدمين أو الأجهزة.</p></div>' +
+      '<button class="btn ghost" data-act="logout">' + icon('out', 20) + 'تسجيل الخروج</button>' +
+      '<button class="btn danger" data-act="resetAsk">' + icon('trash', 20) + 'إعادة ضبط بيانات العرض</button>' +
+      '</div></main>' + nav('settings');
+  }
+
+  var VIEWS = { login: vLogin, register: vRegister, home: vHome, pet: vPet, vet: vVet, time: vTime, summary: vSummary, done: vDone, bookings: vBookings, detail: vDetail, settings: vSettings };
+
+  /* ---------- render ---------- */
+  function render() {
+    try { renderInner(); } catch (e) { if (window.__mpcFail) window.__mpcFail(e && e.stack ? e.stack : String(e), true); }
+  }
+  function renderInner() {
+    var s = $('#screen'), m = $('main'), keep = m ? m.scrollTop : 0, same = s.dataset.route === route;
+    s.innerHTML = VIEWS[route]();
+    s.dataset.route = route;
+    var nm = $('main');
+    if (nm && same) nm.scrollTop = keep;
+  }
+  function go(r, p) {
+    if ((r !== 'login' && r !== 'register') && !db.session) r = 'login';
+    route = r; params = p || {};
+    var s = $('#screen');
+    s.dataset.route = '';
+    render();
+    s.style.animation = 'none'; void s.offsetWidth; s.style.animation = '';
+  }
+  function toast(t) {
+    var el = $('#toast');
+    el.innerHTML = '<div>' + esc(t) + '</div>';
+    clearTimeout(toast.t);
+    toast.t = setTimeout(function () { el.innerHTML = ''; }, 2600);
+  }
+  function setMsg(t) {
+    var m = $('#msg');
+    if (!m) return;
+    m.textContent = t || '';
+    if (t) { m.classList.remove('shake'); void m.offsetWidth; m.classList.add('shake'); }
+  }
+  function modal(o) {
+    var el = $('#modal');
+    el.innerHTML = '<div class="sheet"><h2 id="modal-title">' + o.title + '</h2><p>' + o.body + '</p>' +
+      '<button class="btn ' + (o.danger ? '' : '') + '" id="m-ok" style="' + (o.danger ? 'background:var(--danger);box-shadow:0 4px 0 #8C1B2F' : '') + '">' + o.ok + '</button><button class="btn ghost" id="m-no">' + (o.no || 'تراجع') + '</button></div>';
+    el.classList.add('open');
+    $('#m-no').onclick = closeModal;
+    $('#m-ok').onclick = function () { closeModal(); o.onOk(); };
+    $('#m-no').focus();
+  }
+  function closeModal() { var el = $('#modal'); el.classList.remove('open'); el.innerHTML = ''; }
+
+  /* ---------- actions ---------- */
+  function validateDraft() {
+    var d = draft();
+    if (!PET[d.pet]) return ['pet', 'يرجى اختيار نوع الحيوان أولاً'];
+    if (!vetById(d.vet)) return ['vet', 'يرجى اختيار الطبيب أولاً'];
+    if (!d.date) return ['time', 'يرجى اختيار تاريخ الموعد'];
+    if (d.date < todayKey()) return ['time', 'لا يمكن حجز موعد في تاريخ سابق'];
+    if (!d.time || !slotById(d.time)) return ['time', 'يرجى اختيار وقت الموعد'];
+    if (slotState(d.date, d.time, d.vet) !== 'free') return ['time', 'هذا الموعد لم يعد متاحاً، اختر وقتاً آخر'];
+    return null;
+  }
+  function newRef() {
+    var used = {};
+    db.bookings.forEach(function (b) { used[b.id] = 1; });
+    var id, n = 0;
+    do { id = String(1000 + Math.floor(Math.random() * (n < 50 ? 9000 : 90000))); n++; } while (used[id]);
+    return id;
+  }
+
+  function login(u, name) {
+    db.session = u; db.draft = {}; save();
+    toast('أهلاً بك، ' + name);
+    go('pet');
+  }
+
+  function onSubmit(f) {
+    var kind = f.dataset.form, g = function (n) { return f.elements[n].value; };
+    if (kind === 'login') {
+      var u = g('username').trim().toLowerCase(), p = g('password');
+      if (!u || !p) return setMsg('يرجى إدخال اسم المستخدم وكلمة المرور');
+      var rec = db.users[u];
+      if (!rec) return setMsg('اسم المستخدم غير موجود. أنشئ حساباً جديداً');
+      if (rec.pass !== p) return setMsg('كلمة المرور غير صحيحة');
+      login(u, rec.name);
+    } else if (kind === 'register') {
+      var nm = g('name').trim(), un = g('username').trim().toLowerCase(), pw = g('password'), cf = g('confirm');
+      if (!nm || !un || !pw || !cf) return setMsg('يرجى تعبئة جميع الحقول');
+      if (un.length < 3) return setMsg('اسم المستخدم يجب أن يكون ٣ أحرف على الأقل');
+      if (/[\s<>"'&\\\/]/.test(un)) return setMsg('اسم المستخدم لا يقبل المسافات ولا الرموز < > " \' & \\ /');
+      if (pw.length < 4) return setMsg('كلمة المرور يجب أن تكون ٤ أحرف على الأقل');
+      if (pw !== cf) return setMsg('كلمتا المرور غير متطابقتين');
+      if (db.users[un]) return setMsg('اسم المستخدم مستخدم من قبل، اختر اسماً آخر');
+      db.users[un] = { name: nm, pass: pw };
+      login(un, nm);
+    }
+  }
+
+  function act(a, ds, el) {
+    var d = draft();
+    switch (a) {
+      case 'back': go(BACK[route] || 'home'); break;
+      case 'go': go(ds.to); break;
+      case 'togglePw':
+        var inp = el.parentNode.querySelector('input'), show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        el.innerHTML = icon(show ? 'eyeOff' : 'eye', 20);
+        el.setAttribute('aria-label', show ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
+        break;
+      case 'fillDemo': $('#username').value = 'demo'; $('#password').value = '1234'; setMsg(''); break;
+      case 'startBooking': resetDraft(); go('pet'); break;
+      case 'pickPet': d.pet = ds.id; save(); setMsg(''); render(); break;
+      case 'pickVet': d.vet = ds.id; if (d.time && d.date && slotState(d.date, d.time, d.vet) !== 'free') d.time = null; save(); render(); break;
+      case 'pickDate': d.date = ds.id; if (d.time && slotState(d.date, d.time, d.vet) !== 'free') d.time = null; save(); render(); break;
+      case 'pickTime': d.time = ds.id; save(); setMsg(''); render(); break;
+      case 'nextPet': if (!PET[d.pet]) return setMsg('يرجى اختيار نوع الحيوان للمتابعة'); go('vet'); break;
+      case 'nextVet': if (!vetById(d.vet)) return setMsg('يرجى اختيار الطبيب للمتابعة'); go('time'); break;
+      case 'nextTime':
+        if (!d.date) return setMsg('يرجى اختيار تاريخ الموعد');
+        if (d.date < todayKey()) return setMsg('لا يمكن حجز موعد في تاريخ سابق');
+        if (!d.time) return setMsg('يرجى اختيار وقت الموعد');
+        if (slotState(d.date, d.time, d.vet) !== 'free') return setMsg('هذا الموعد لم يعد متاحاً، اختر وقتاً آخر');
+        go('summary'); break;
+      case 'confirm':
+        var err = validateDraft();
+        if (err) { toast(err[1]); return go(err[0]); }
+        var v = vetById(d.vet), s = slotById(d.time);
+        var b = { id: newRef(), user: db.session, pet: d.pet, vet: v.id, vetName: v.name, clinic: v.clinic, date: d.date, time: s.id, timeLabel: s.label, price: PRICE, status: 'active', createdAt: Date.now() };
+        db.bookings.push(b); db.draft = {}; save();
+        go('done', { id: b.id }); break;
+      case 'openBooking': go('detail', { id: ds.id }); break;
+      case 'filter': bFilter = ds.id; render(); break;
+      case 'cancelAsk':
+        modal({ title: 'إلغاء الحجز؟', body: 'سيتم إلغاء الحجز رقم ' + ds.id + ' ويصبح الموعد متاحاً من جديد.', ok: 'نعم، إلغاء الحجز', no: 'تراجع', danger: true, onOk: function () {
+          db.bookings.forEach(function (x) { if (x.id === ds.id) x.status = 'cancelled'; });
+          save(); toast('تم إلغاء الحجز'); render();
+        } }); break;
+      case 'logout': db.session = null; db.draft = {}; save(); toast('تم تسجيل الخروج'); go('login'); break;
+      case 'resetAsk':
+        modal({ title: 'إعادة ضبط بيانات العرض؟', body: 'سيتم حذف جميع الحسابات والحجوزات المحفوظة على هذا الجهاز، وسيُعاد الحساب التجريبي فقط.', ok: 'نعم، احذف كل شيء', no: 'تراجع', danger: true, onOk: function () {
+          db = defaults(); bFilter = 'all'; save(); toast('تمت إعادة ضبط البيانات'); go('login');
+        } }); break;
+    }
+  }
+
+  /* ---------- events ---------- */
+  var shell = $('#shell');
+  shell.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el || el.disabled) return;
+    try { act(el.dataset.act, el.dataset, el); } catch (err) { if (window.console) console.error(err); toast('حدث خطأ غير متوقع، حاول مرة أخرى'); }
+  });
+  shell.addEventListener('submit', function (e) {
+    e.preventDefault();
+    try { onSubmit(e.target); } catch (err) { if (window.console) console.error(err); setMsg('حدث خطأ غير متوقع، حاول مرة أخرى'); }
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+  $('#modal').addEventListener('click', function (e) { if (e.target.id === 'modal') closeModal(); });
+
+  /* ---------- boot ---------- */
+  document.documentElement.lang = 'ar';
+  document.documentElement.dir = 'rtl';
+  var tile = '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140"><g fill="#F7D3DD" opacity=".55"><g transform="translate(16 18) rotate(-18) scale(.28)"><path d="M50 54c-13 0-22 9-22 18 0 8 6 11 13 9 4-1 6-2 9-2s5 1 9 2c7 2 13-1 13-9 0-9-9-18-22-18z"/><ellipse cx="22" cy="44" rx="8.5" ry="11"/><ellipse cx="39" cy="26" rx="9" ry="12"/><ellipse cx="61" cy="26" rx="9" ry="12"/><ellipse cx="78" cy="44" rx="8.5" ry="11"/></g><g transform="translate(88 82) rotate(16) scale(.34)"><path d="M50 54c-13 0-22 9-22 18 0 8 6 11 13 9 4-1 6-2 9-2s5 1 9 2c7 2 13-1 13-9 0-9-9-18-22-18z"/><ellipse cx="22" cy="44" rx="8.5" ry="11"/><ellipse cx="39" cy="26" rx="9" ry="12"/><ellipse cx="61" cy="26" rx="9" ry="12"/><ellipse cx="78" cy="44" rx="8.5" ry="11"/></g></g></svg>';
+  shell.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(tile) + '")';
+  route = db.session ? 'home' : 'login';
+  render();
+  if ($('#screen') && $('#screen').children.length) window.__mpcReady = true;
+})();
+</script>
+</body>
+</html>
